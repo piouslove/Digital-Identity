@@ -5,7 +5,7 @@ var merkle = new Merkle();
 var randomString = require('./utils/randomString');
 var shuffle = require('./utils/shuffle');
 var cfg = require('../config');
-var jwt = require('jsontokens')
+var jwt = require('jsontokens');
 
 function Claim(props){
 	// issuer可指定但建议由配置文件输入
@@ -72,7 +72,7 @@ Claim.prototype.getAttestation = function() {
 		attrobj.issuer = this.iss;
 		attrobj.key = key;
 		// 获取attribute的value
-		attrobj.value = obj.key;
+		attrobj.value = obj[key];
 		attrobj.index = this.merkleArr.indexOf(attr);
 		attrobj.proof = this.getMerkleProof(attrobj.index);
 		attrobj.jwt = this.getJWT();
