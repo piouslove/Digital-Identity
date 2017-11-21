@@ -3,11 +3,12 @@
 var config = {
 
 	claim:{
-		issuer:' ',
-		expiration:300,
-		subject:'test',
-		strength:3,
-		privateKey:' '
+		issuer: ' ',
+		expiration: 300,
+		subject: 'test',
+		strength: 3,
+		privateKey: ' ',
+		iat: 0
 	}
 
 }

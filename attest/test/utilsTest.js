@@ -1,6 +1,6 @@
-var Merkle = require('./merkletree');
-var randomString = require('./randomString');
-var shuffle = require('./shuffle');
+var Merkle = require('../utils/merkletree');
+var randomString = require('../utils/randomString');
+var shuffle = require('../utils/shuffle');
 
 var arr = [];
 var a = randomString(10);
