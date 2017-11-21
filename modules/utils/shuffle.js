@@ -1,6 +1,7 @@
 // Array random sort
 
-export default function shuffle(arr){
+function shuffle(array){
+	var arr = array.concat();
     var len = arr.length;
     for(var i = 0; i < len - 1; i++){
         var idx = Math.floor(Math.random() * (len - i));
@@ -11,3 +12,4 @@ export default function shuffle(arr){
     return arr;
 }
 
+module.exports = shuffle;

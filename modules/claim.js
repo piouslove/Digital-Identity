@@ -1,9 +1,12 @@
 'use strict';
 
 var Merkle = require('./utils/merkletree');
+var merkle = new Merkle();
+
 var randomString = require('./utils/randomString');
 var shuffle = require('./utils/shuffle');
-var cfg = require('../config')
+var cfg = require('../config');
+var jwt = require('jsontokens')
 
 //function Claim(arr, audience, issuer, expiration, subject, iat, strength)
 function Claim(props){
@@ -15,7 +18,7 @@ function Claim(props){
 	this.sub = props.subject || cfg.claim.subject;
 
     // 属性
-	this.attributes = props.arr; // 属性键值对数组
+	this.attributes = attrtoJSON(props.arr); // 属性键值对数组
 	this.strength = props.strength || cfg.claim.strength; // 1:不随机, 2：随机排序, 3：随机字符
 	/*this.getMerkleArr = () => {
 		var k = this.attributes.length;
@@ -35,32 +38,67 @@ function Claim(props){
 		}
 	};*/
 	this.merkleArr = getMerkleArr(this.attributes, this.strength, cfg.claim.max, cfg.claim.min); 
-
-
+	//this.merkleArr = getMerkleArr(this.attributes, this.strength);
 }
 
 Claim.prototype.getMerkleRoot = function() {
-	// body...
+	merkle.resetTree();
+	merkle.addLeaves(this.merkleArr, true);
+	var doubleHash = false; // true to hash pairs twice as the tree is constructed 
+	merkle.makeTree(doubleHash);
+	return merkle.getMerkleRoot().toString('hex');
 };
 
 Claim.prototype.getJWT = function() {
-	// body...
+	var now = new Date();
+	var payload = {
+		iss:this.iss || now.getTime(),
+		iat:this.iat,
+		exp:this.exp,
+		aud:this.aud,
+		sub:this.sub,
+		context:{
+			MerkleTreeRoot:this.getMerkleRoot()
+		}
+	};
+	var token = new jwt.TokenSigner('ES256k', cfg.claim.privateKey).sign(payload);
+	return token;
 };
 
-Claim.prototype.getMerkleProof = function() {
-	// body...
+Claim.prototype.getMerkleProof = function(index) {
+	merkle.resetTree();
+	merkle.addLeaves(this.merkleArr, true);
+	var doubleHash = false; // true to hash pairs twice as the tree is constructed 
+	merkle.makeTree(doubleHash);
+	return merkle.getProof(index);
 };
 
 Claim.prototype.getAttestation = function() {
-	// body...
-	//return set json
+	var attestation = [];
+	for (var i = this.attributes.length - 1; i >= 0; i--) {
+		var attrobj = {};
+		var attr = this.attributes[i];
+		var obj = JSON.parse(attr);
+		var key = '';
+		for (var j in obj) {
+			key = j;
+		}
+		attrobj.issuer = this.iss;
+		attrobj.key = key;
+		attrobj.value = obj.key;
+		attrobj.index = this.merkleArr.indexOf(attr);
+		attrobj.proof = this.getMerkleProof(attrobj.index);
+		attrobj.jwt = this.getJWT();
+		attestation.push(attrobj);
+	}
+	return JSON.stringify(attestation);
 };
 
-getMerkleArr = function(arr, strength, max, min) {
+function getMerkleArr(arr, strength, max, min) {
 	var k = arr.length;
 	var merkleArr = [];
 	var m = max || 20;
-	var n = min || 2；
+	var n = min || 2;
 	var randomArr = [];
 	if (strength === 3) {
 		//return randomString()
@@ -80,6 +118,15 @@ getMerkleArr = function(arr, strength, max, min) {
 	}
 } 
 
+function attrtoJSON(arr) {
+	for (var i = arr.length - 1; i >= 0; i--) {
+		arr[i] = JSON.stringify(arr[i]);
+	}
+	return arr;
+}
+
 function createClaim(props) {
     return new Claim(props);
 }
+
+module.exports = Claim;
