@@ -17,26 +17,8 @@ function Claim(props){
 	this.aud = props.audience;
 	this.sub = props.subject || cfg.claim.subject;
 
-    // 属性
-	this.attributes = attrtoJSON(props.arr); // 属性键值对数组
-	this.strength = props.strength || cfg.claim.strength; // 1:不随机, 2：随机排序, 3：随机字符
-	/*this.getMerkleArr = () => {
-		var k = this.attributes.length;
-		var merkleArr = [];
-		if (this.strength === 3) {
-			//return randomString()
-            for (var i = k / 2 - 1; i >= 0; i--) {
-            	randomString
-            }
-			//return shuffle()
-		}
-		else if (this.strength === 2) {
-            //return shuffle()
-		}
-		else {
-			return this.attributes;
-		}
-	};*/
+	this.attributes = attrtoJSON(props.arr);
+	this.strength = props.strength || cfg.claim.strength;
 	this.merkleArr = getMerkleArr(this.attributes, this.strength, cfg.claim.max, cfg.claim.min); 
 	//this.merkleArr = getMerkleArr(this.attributes, this.strength);
 }
@@ -52,8 +34,8 @@ Claim.prototype.getMerkleRoot = function() {
 Claim.prototype.getJWT = function() {
 	var now = new Date();
 	var payload = {
-		iss:this.iss || now.getTime(),
-		iat:this.iat,
+		iss:this.iss,
+		iat:this.iat || now.getTime(),
 		exp:this.exp,
 		aud:this.aud,
 		sub:this.sub,
