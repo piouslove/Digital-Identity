@@ -16,13 +16,18 @@ var props1 = {
 
 var claim = new Claim(props1);
 var att = claim.getAttestation();
-console.log(claim.merkleArr);
+// console.log(claim.merkleArr);
 var arr = JSON.parse(att);
 
 for (var i = attrs.length - 1; i >= 0; i--) {
 console.log('=== === === === === === START === === === === === ===\n');
-var attr = arr[0];
+var attr = arr[i];
 var credential = new Credential(attr);
+
+console.log(
+	'key : ' + credential.key + 
+	' , ' + 'value : ' + credential.value
+	);
 
 console.log(
 	'jwtData : '+
