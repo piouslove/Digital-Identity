@@ -16,7 +16,7 @@ var props = {
 	subject: 'Digital Identity',
 	arr: attrs,
 	strength: 3
-}
+};
 
 var claim = new Claim(props);
 
