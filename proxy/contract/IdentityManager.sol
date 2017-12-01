@@ -64,6 +64,7 @@ contract IdentityManager {
         _;
     }
 
+    // 对于owner和recovery操作频率的限制
     modifier rateLimited(address identity) {
         require(limiter[identity][msg.sender] < (now - adminRate));
         limiter[identity][msg.sender] = now;
@@ -79,6 +80,10 @@ contract IdentityManager {
     /// @param _userTimeLock Time before new owner added by recovery can control proxy
     /// @param _adminTimeLock Time before new owner can add/remove owners
     /// @param _adminRate Time period used for rate limiting a given key for admin functionality
+    /// 构造函数设置主要的时间限制，将用户集中到同一个管理合约
+    /// _userTimeLock限制一个新owner从被recovery添加到实际控制proxy合约的时间
+    /// _adminTimeLock限制一个新owner可以增加或删除owners的时间
+    /// _adminRate是对于管理功能的操作频率限制
     function IdentityManager(uint _userTimeLock, uint _adminTimeLock, uint _adminRate) {
         adminTimeLock = _adminTimeLock;
         userTimeLock = _userTimeLock;
@@ -89,8 +94,11 @@ contract IdentityManager {
     /// @param owner Key who can use this contract to control proxy. Given full power
     /// @param recoveryKey Key of recovery network or address from seed to recovery proxy
     /// Gas cost of 289,311
+    /// 创建一个新的Owned为这个合约的proxy合约，并指定它的owner字段和recovery字段
+    /// 因此注册为中心化做法，由机构帮用户实现
     function createIdentity(address owner, address recoveryKey) public validAddress(recoveryKey) {
         Proxy identity = new Proxy();
+        // 赋予owner对于proxy的控制权，立刻生效
         owners[identity][owner] = now - adminTimeLock; // This is to ensure original owner has full power from day one
         recoveryKeys[identity] = recoveryKey;
         LogIdentityCreated(identity, msg.sender, owner,  recoveryKey);
@@ -100,19 +108,25 @@ contract IdentityManager {
     /// @param owner Key who can use this contract to control proxy. Given full power
     /// @param recoveryKey Key of recovery network or address from seed to recovery proxy
     /// Note: User must change owner of proxy to this contract after calling this
+    /// 用于用户提前部署好proxy合约，然后把控制权Owned[此时等同于owner]注册到这个合约并通过这个合约管理身份proxy
+    /// 这个函数通过Proxy合约forward来调用
+    /// 最后应该调用Owned的transfer来把proxy的控制权交给这份合约
     function registerIdentity(address owner, address recoveryKey) public validAddress(recoveryKey) {
         require(recoveryKeys[msg.sender] == 0); // Deny any funny business
+        // 赋予owner对于proxy的控制权，立刻生效
         owners[msg.sender][owner] = now - adminTimeLock; // This is to ensure original owner has full power from day one
         recoveryKeys[msg.sender] = recoveryKey;
         LogIdentityCreated(msg.sender, msg.sender, owner, recoveryKey);
     }
 
     /// @dev Allows a user to forward a call through their proxy.
+    /// 这份合约在掌握proxy的控制权后，帮助用户实现应该属于他们的proxy合约的forward功能
     function forwardTo(Proxy identity, address destination, uint value, bytes data) public onlyOwner(identity) {
         identity.forward(destination, value, data);
     }
 
     /// @dev Allows an olderOwner to add a new owner instantly
+    /// 允许一个原有owner立即增加一个owner
     function addOwner(Proxy identity, address newOwner) public onlyOlderOwner(identity) rateLimited(identity) {
         owners[identity][newOwner] = now - userTimeLock;
         LogOwnerAdded(identity, newOwner, msg.sender);
