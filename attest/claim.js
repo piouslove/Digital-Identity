@@ -8,10 +8,11 @@ var cfg = require('../config');
 var jwt = require('jsontokens');
 
 function Claim(props){
+	var now = new Date();
 	// issuer可指定但建议由配置文件输入
 	this.iss = props.issuer || cfg.claim.issuer;
 	// issued at time建议不指定由系统自己生成
-	this.iat = props.iat || cfg.claim.iat;
+	this.iat = now.getTime() || cfg.claim.iat;
 	// 有效期限可指定但建议由配置文件输入
 	this.exp = props.expiration || cfg.claim.expiration;
 	this.aud = props.audience;
@@ -34,11 +35,10 @@ Claim.prototype.getMerkleRoot = function() {
 };
 
 Claim.prototype.getJWT = function() {
-	var now = new Date();
 	var payload = {
 		iss: this.iss,
 		// issued at time建议采用方式
-		iat: this.iat || now.getTime(),
+		iat: this.iat,
 		exp: this.exp,
 		aud: this.aud,
 		sub: this.sub,

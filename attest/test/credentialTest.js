@@ -2,6 +2,7 @@
 
 var Claim = require('../claim');
 var Credential = require('../credential');
+var jwtToaddr = require('../utils/jwtToaddr');
 
 var attr_name = {name: 'Ethereum'},
     attr_number = {number: 1},
@@ -21,8 +22,19 @@ var arr = JSON.parse(att);
 
 for (var i = attrs.length - 1; i >= 0; i--) {
 console.log('=== === === === === === START === === === === === ===\n');
+
 var attr = arr[i];
 var credential = new Credential(attr);
+
+console.log(
+	'jwt : '+
+	credential.jwt
+	);
+
+console.log(
+	'ethAddr : '+
+	jwtToaddr(credential.jwt)
+	);
 
 console.log(
 	'key : ' + credential.key + 

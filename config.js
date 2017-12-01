@@ -7,13 +7,13 @@ var config = {
 		expiration: 300,
 		subject: 'test',
 		strength: 3,
-		privateKey: 'b08e0060d8aa08633c16b3ddaebc0a7e8e11aedf54873bdbf1ff4f05c8b83d17',
+		privateKey: 'fe36e720cc3c0706406bc269a4c0d688478130d4ab2743b9a8ec3f902af33f80',
 		// iat: 0
 	},
 
 	credential: {
 		issuer: 'IDHub',
-		publicKey: '044d460e74c1d5ef7c4969b31d0cb366a3d015c39153ca9fe60e85bbfb7c4cc07a1ef021e539f86ec5957cba00e5a64cc70b93186bf778b934683363598b2e6805'
+		publicKey: '049161d39424bd0c91d37500ce0f64a05b6b5eb2154137e2f5fbdbf4b2185138a80633ef6f273e3dbcca9a5716422d01705540f729d58ac6d6d7cdc5baa095e3ff'
 	}
 
 }
