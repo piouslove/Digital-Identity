@@ -1,6 +1,6 @@
 'use strict';
 
-var signer = require('jsontokens').cryptoClient['ES256K'];
+var signer = require('jsontokens').cryptoClients['ES256K'];
 var secp256k1 = require('secp256k1');
 var sha3 = require('ethereumjs-util');
 
